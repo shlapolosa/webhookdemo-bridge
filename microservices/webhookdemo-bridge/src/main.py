@@ -1,17 +1,20 @@
-"""Realtime GATEWAY (generated, RT-2). Consumes the declared topics and streams
-to websocket clients on /ws. Transport via realtime-transport; topics/bindings
-from CONSUME_*/PRODUCE_* + <realtime>-conn env (realtime-service CD)."""
+"""Realtime WEBHOOK BRIDGE (generated, RT-2). Consume declared CONSUME_* topics ->
+handlers.to_event -> POST to the webhook engine (Svix) /app/<app>/msg, which fans
+out HMAC-signed deliveries to externally-registered endpoints. NO produce.
+
+Binding env (envFrom <webhook>-conn + <webhook>-svix-credentials):
+  WEBHOOK_ENGINE_API, WEBHOOK_ADMIN_TOKEN, WEBHOOK_APP_ID,
+  WEBHOOK_EVENTTYPE_<topic> (topic -> Svix event type).
+Transport + default Svix sink via realtime-transport."""
 import os
-from realtime_transport import create_realtime_agent_app, GenericRealtimeAgent
+from realtime_transport import create_realtime_webhook_app
+from src.handlers import to_event
 
-SERVICE_NAME = os.getenv("WEBSERVICE_NAME", os.getenv("REALTIME_PLATFORM_NAME", "realtime-service"))
+SERVICE_NAME = os.getenv("WEBSERVICE_NAME", os.getenv("REALTIME_PLATFORM_NAME", "realtime-webhook"))
 
-app = create_realtime_agent_app(
-    agent_class=GenericRealtimeAgent,
+app = create_realtime_webhook_app(
     service_name=SERVICE_NAME,
-    description="Realtime websocket gateway (consume -> /ws)",
-    endpoints=[],
-    websocket_endpoints=[{"path": "/ws", "description": "realtime stream"}],
+    to_event=to_event,
 )
 
 if __name__ == "__main__":
