@@ -1,2 +1,3 @@
 # webhookdemo-bridge
-OAM-driven realtime-service (websocket+kafka flavor)
+
+CLAUDE.md-compliant microservice application container.
